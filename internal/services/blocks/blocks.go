@@ -20,11 +20,12 @@ type Opts struct {
 }
 
 func New(opts Opts) *Service {
+	defaultDifficulty := opts.Config.DefaultDifficulty
+
 	s := &Service{
 		config:     opts.Config,
 		logger:     opts.Logger,
 		blockchain: make([]Block, 0),
-		difficulty: 4,
 	}
 
 	// genesis block
@@ -33,10 +34,10 @@ func New(opts Opts) *Service {
 		Index:      0,
 		Timestamp:  t.String(),
 		BPM:        0,
-		Difficulty: s.difficulty,
-		PrevHash:   "", // Empty for genesis
+		Difficulty: defaultDifficulty,
+		PrevHash:   "",
 	}
-	mineBlock(&genesisBlock, s.difficulty)
+	mineBlock(&genesisBlock, 2)
 	s.blockchain = append(s.blockchain, genesisBlock)
 	s.logger.Info("Genesis block created", zap.Any("block", genesisBlock))
 
@@ -47,7 +48,49 @@ type Service struct {
 	config     config.Config
 	logger     *zap.Logger
 	blockchain []Block
-	difficulty int
+}
+
+func (s *Service) generateBlock(oldBlock Block, BPM int, difficulty int) (Block, error) {
+	if BPM < 0 {
+		return Block{}, fmt.Errorf("BPM must be greater than 0")
+	}
+
+	newBlock := Block{
+		Index:      oldBlock.Index + 1,
+		Timestamp:  time.Now().String(),
+		BPM:        BPM,
+		PrevHash:   oldBlock.Hash,
+		Difficulty: difficulty,
+	}
+
+	mineBlock(&newBlock, difficulty)
+
+	return newBlock, nil
+}
+
+func (s *Service) calculateAverageMineTime() float64 {
+	if len(s.blockchain) < 2 {
+		return 0
+	}
+
+	var total float64
+	for i := 1; i < len(s.blockchain); i++ {
+		total += s.blockchain[i].Stats.MiningTime
+	}
+
+	return total / float64(len(s.blockchain)-1)
+}
+
+func (s *Service) adjustDifficulty(difficulty int) int {
+	if len(s.blockchain) > 0 {
+		lastBlock := s.blockchain[len(s.blockchain)-1]
+		if lastBlock.Stats.MiningTime < 1.0 {
+			return min(difficulty+1, 6)
+		} else if lastBlock.Stats.MiningTime > 10.0 {
+			return max(1, difficulty-1)
+		}
+	}
+	return difficulty
 }
 
 func mineBlock(block *Block, difficulty int) {
@@ -55,7 +98,6 @@ func mineBlock(block *Block, difficulty int) {
 	attempts := 0
 	prefix := strings.Repeat("0", difficulty)
 
-	// initial values for genesis block
 	if block.Index == 0 {
 		block.Hash = calculateHash(*block)
 		block.Stats = BlockStats{
@@ -66,7 +108,6 @@ func mineBlock(block *Block, difficulty int) {
 		return
 	}
 
-	// Proof of Work
 	for {
 		block.Nonce++
 		attempts++
@@ -76,7 +117,7 @@ func mineBlock(block *Block, difficulty int) {
 		}
 		fmt.Printf("\r%x", block.Hash)
 		if attempts > 1000000 {
-			block.Difficulty-- // Reduce difficulty if mining takes too long
+			block.Difficulty--
 			prefix = strings.Repeat("0", block.Difficulty)
 		}
 	}
@@ -85,6 +126,16 @@ func mineBlock(block *Block, difficulty int) {
 		MinedAt:    time.Now(),
 		MiningTime: time.Since(start).Seconds(),
 		Attempts:   attempts,
+	}
+
+	block.Stats.Process = struct {
+		CurrentHash  string  `json:"currentHash"`
+		HashesPerSec float64 `json:"hashesPerSec"`
+		Target       string  `json:"target"`
+	}{
+		CurrentHash:  block.Hash,
+		HashesPerSec: float64(attempts) / time.Since(start).Seconds(),
+		Target:       strings.Repeat("0", difficulty),
 	}
 }
 
@@ -101,36 +152,6 @@ func calculateHash(block Block) string {
 	h.Write([]byte(record))
 	hashed := h.Sum(nil)
 	return hex.EncodeToString(hashed)
-}
-
-func (s *Service) generateBlock(oldBlock Block, BPM int) (Block, error) {
-	if BPM < 0 {
-		return Block{}, ErrInvalidBPM
-	}
-
-	newBlock := Block{
-		Index:      oldBlock.Index + 1,
-		Timestamp:  time.Now().String(),
-		BPM:        BPM,
-		PrevHash:   oldBlock.Hash,
-		Difficulty: s.difficulty,
-	}
-
-	mineBlock(&newBlock, s.difficulty)
-
-	return newBlock, nil
-}
-
-func (s *Service) adjustDifficulty() {
-	if len(s.blockchain) > 0 {
-		lastBlock := s.blockchain[len(s.blockchain)-1]
-		// Adjust difficulty based on mining time
-		if lastBlock.Stats.MiningTime < 1.0 { // Too fast
-			s.difficulty++
-		} else if lastBlock.Stats.MiningTime > 10.0 { // Too slow
-			s.difficulty = max(1, s.difficulty-1)
-		}
-	}
 }
 
 func isBlockValid(newBlock, oldBlock Block) bool {

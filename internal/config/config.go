@@ -9,7 +9,8 @@ import (
 )
 
 type Config struct {
-	Port int `envconfig:"PORT" default:"8080"`
+	Port              int `envconfig:"PORT" default:"8080"`
+	DefaultDifficulty int `envconfig:"DEFAULT_DIFFICULTY" default:"2"`
 }
 
 func New() (Config, error) {
