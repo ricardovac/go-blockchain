@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useAppStore } from '@/stores/app'
+import { useAppStore } from '@/pinia/modules/app'
 import { computed } from 'vue'
 import Header from './Header.vue'
 const appStore = useAppStore()

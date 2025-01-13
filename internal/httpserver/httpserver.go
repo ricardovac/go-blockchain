@@ -26,6 +26,7 @@ func New(opts Opts) *Server {
 	}
 
 	s.Use(
+		gin.LoggerWithWriter(gin.DefaultWriter, "/health"),
 		cors.New(
 			cors.Config{
 				AllowAllOrigins:  true,
@@ -58,6 +59,7 @@ func New(opts Opts) *Server {
 
 type Server struct {
 	*gin.Engine
+	Api *gin.RouterGroup
 }
 
 func (c *Server) StartServer(port int) {

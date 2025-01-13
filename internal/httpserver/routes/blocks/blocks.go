@@ -26,8 +26,8 @@ func New(opts Opts) (*Block, error) {
 
 	group := opts.HttpServer.Group("/blocks")
 
-	group.POST("/", b.blockService.HandleWriteBlock)
-	group.GET("/", b.blockService.HandleGetBlockchain)
+	group.POST("", b.blockService.HandleWriteBlock)
+	group.GET("", b.blockService.HandleGetBlockchain)
 
 	return b, nil
 }

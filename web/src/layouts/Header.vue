@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import Icon from '@/components/Icon.vue'
-import { useAppStore } from '@/stores/app'
+import { useAppStore } from '@/pinia/modules/app'
 import { useDark, useToggle } from '@vueuse/core'
 import { NButton } from 'naive-ui'
 
