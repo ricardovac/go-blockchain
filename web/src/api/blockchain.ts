@@ -1,41 +1,21 @@
 import request from '@/utils/request'
+import type { BlockchainResponse } from '@/utils/types'
 
-interface BlockchainStats {
-  totalBlocks: number
-  avgMineTime: number
+export interface ApiErrorResponse {
+  error: string
+  code: number
+  details: string
 }
 
-interface BlockProgress {
-  currentHash: string
-  hashesPerSec: number
-  target: string
-}
-
-interface BlockStats {
-  minedAt: string
-  miningTime: number
-  attempts: number
-  progress: BlockProgress
-}
-
-interface Block {
-  index: number
-  timestamp: string
-  bpm: number
-  hash: string
-  prevHash: string
-  nonce: number
-  difficulty: number
-  stats: BlockStats
-}
-
-export interface BlockchainResponse {
-  blocks: Block[]
-  difficulty: number
-  stats: BlockchainStats
-}
-
-export const getBlockchain = async (): Promise<BlockchainResponse> => {
+export const getBlocks = async (): Promise<BlockchainResponse> => {
   const response = await request.get('/blocks')
+  return response.data
+}
+
+export const mineBlock = async (payload: {
+  data: string
+  difficulty: number
+}): Promise<BlockchainResponse> => {
+  const response = await request.post('/blocks', payload)
   return response.data
 }

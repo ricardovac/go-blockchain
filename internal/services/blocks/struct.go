@@ -16,7 +16,7 @@ type BlockStats struct {
 type Block struct {
 	Index      int        `json:"index"`
 	Timestamp  string     `json:"timestamp"`
-	BPM        int        `json:"bpm"`
+	Data       string     `json:"data"`
 	Hash       string     `json:"hash"`
 	PrevHash   string     `json:"prevHash"`
 	Nonce      int        `json:"nonce"`

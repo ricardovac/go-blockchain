@@ -29,11 +29,10 @@ func New(opts Opts) *Service {
 	}
 
 	// genesis block
-	t := time.Now()
 	genesisBlock := Block{
 		Index:      0,
-		Timestamp:  t.String(),
-		BPM:        0,
+		Timestamp:  time.Now().Format(time.RFC3339Nano),
+		Data:       "Genesis Block",
 		Difficulty: defaultDifficulty,
 		PrevHash:   "",
 	}
@@ -50,15 +49,15 @@ type Service struct {
 	blockchain []Block
 }
 
-func (s *Service) generateBlock(oldBlock Block, BPM int, difficulty int) (Block, error) {
-	if BPM < 0 {
-		return Block{}, fmt.Errorf("BPM must be greater than 0")
+func (s *Service) generateBlock(oldBlock Block, data string, difficulty int) (Block, error) {
+	if data == "" {
+		return Block{}, fmt.Errorf("data must be greater than 0")
 	}
 
 	newBlock := Block{
 		Index:      oldBlock.Index + 1,
-		Timestamp:  time.Now().String(),
-		BPM:        BPM,
+		Timestamp:  time.Now().Format(time.RFC3339Nano),
+		Data:       data,
 		PrevHash:   oldBlock.Hash,
 		Difficulty: difficulty,
 	}
@@ -140,10 +139,10 @@ func mineBlock(block *Block, difficulty int) {
 }
 
 func calculateHash(block Block) string {
-	record := fmt.Sprintf("%d%s%d%s%d%d",
+	record := fmt.Sprintf("%d%s%s%s%d%d",
 		block.Index,
 		block.Timestamp,
-		block.BPM,
+		block.Data,
 		block.PrevHash,
 		block.Nonce,
 		block.Difficulty,
@@ -164,6 +163,19 @@ func isBlockValid(newBlock, oldBlock Block) bool {
 	}
 
 	if calculateHash(newBlock) != newBlock.Hash {
+		return false
+	}
+
+	prefix := strings.Repeat("0", newBlock.Difficulty)
+	if !strings.HasPrefix(newBlock.Hash, prefix) {
+		return false
+	}
+
+	if newBlock.Timestamp <= oldBlock.Timestamp {
+		return false
+	}
+
+	if newBlock.Difficulty < 1 || newBlock.Difficulty > 4 {
 		return false
 	}
 

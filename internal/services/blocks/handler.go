@@ -2,29 +2,18 @@ package blocks
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Message struct {
-	BPM int
+	Data       string `json:"data"`
+	Difficulty int    `json:"difficulty"`
 }
 
 func (s *Service) HandleWriteBlock(c *gin.Context) {
-	difficulty, err := strconv.Atoi(c.DefaultQuery("difficulty", fmt.Sprint(s.config.DefaultDifficulty)))
-	if err != nil || difficulty < 1 || difficulty > 6 {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error:   "invalid difficulty",
-			Code:    http.StatusBadRequest,
-			Details: "difficulty must be an integer between 1 and 6",
-		})
-		return
-	}
-
 	var m Message
 	if err := c.ShouldBindJSON(&m); err != nil {
 		c.JSON(http.StatusBadRequest, ErrorResponse{
@@ -44,7 +33,7 @@ func (s *Service) HandleWriteBlock(c *gin.Context) {
 
 	go func() {
 		previousBlock := s.blockchain[len(s.blockchain)-1]
-		newBlock, genErr = s.generateBlock(previousBlock, m.BPM, difficulty)
+		newBlock, genErr = s.generateBlock(previousBlock, m.Data, m.Difficulty)
 		close(done)
 	}()
 
@@ -69,11 +58,11 @@ func (s *Service) HandleWriteBlock(c *gin.Context) {
 
 	if isBlockValid(newBlock, s.blockchain[len(s.blockchain)-1]) {
 		s.blockchain = append(s.blockchain, newBlock)
-		difficulty = s.adjustDifficulty(difficulty)
+		m.Difficulty = s.adjustDifficulty(m.Difficulty)
 		c.JSON(http.StatusCreated, BlockResponse{
 			Block:       newBlock,
 			ChainLength: len(s.blockchain),
-			Difficulty:  difficulty,
+			Difficulty:  m.Difficulty,
 		})
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"error": ErrorResponse{
@@ -84,7 +73,7 @@ func (s *Service) HandleWriteBlock(c *gin.Context) {
 	}
 }
 
-func (s *Service) HandleGetBlockchain(c *gin.Context) {
+func (s *Service) HandlegetBlocks(c *gin.Context) {
 	avgMineTime := s.calculateAverageMineTime()
 
 	c.JSON(http.StatusOK, ChainResponse{
