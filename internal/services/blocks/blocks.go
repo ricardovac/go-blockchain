@@ -80,6 +80,48 @@ func (s *Service) calculateAverageMineTime() float64 {
 	return total / float64(len(s.blockchain)-1)
 }
 
+func (s *Service) isChainValid() (bool, error) {
+	if len(s.blockchain) < 2 {
+		return true, nil
+	}
+
+	for i := 1; i < len(s.blockchain); i++ {
+		currentBlock := s.blockchain[i]
+		previousBlock := s.blockchain[i-1]
+
+		if currentBlock.Hash != calculateHash(currentBlock) {
+			return false, fmt.Errorf("invalid hash at block %d", currentBlock.Index)
+		}
+
+		if currentBlock.PrevHash != previousBlock.Hash {
+			return false, fmt.Errorf("broken chain at block %d", currentBlock.Index)
+		}
+
+		if currentBlock.Index != previousBlock.Index+1 {
+			return false, fmt.Errorf("invalid index at block %d", currentBlock.Index)
+		}
+
+		currentTime, err := time.Parse(time.RFC3339Nano, currentBlock.Timestamp)
+		if err != nil {
+			return false, fmt.Errorf("invalid timestamp format at block %d", currentBlock.Index)
+		}
+		previousTime, err := time.Parse(time.RFC3339Nano, previousBlock.Timestamp)
+		if err != nil {
+			return false, fmt.Errorf("invalid timestamp format at block %d", previousBlock.Index)
+		}
+		if currentTime.Before(previousTime) {
+			return false, fmt.Errorf("invalid timestamp order at block %d", currentBlock.Index)
+		}
+
+		prefix := strings.Repeat("0", currentBlock.Difficulty)
+		if !strings.HasPrefix(currentBlock.Hash, prefix) {
+			return false, fmt.Errorf("invalid proof of work at block %d", currentBlock.Index)
+		}
+	}
+
+	return true, nil
+}
+
 func (s *Service) adjustDifficulty(difficulty int) int {
 	if len(s.blockchain) > 0 {
 		lastBlock := s.blockchain[len(s.blockchain)-1]

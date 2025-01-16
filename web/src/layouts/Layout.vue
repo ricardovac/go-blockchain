@@ -1,37 +1,12 @@
 <script setup lang="ts">
-import { useAppStore } from '@/pinia/modules/app'
-import { computed } from 'vue'
-import Header from './Header.vue'
-const appStore = useAppStore()
-const isSidebarCollapsed = computed(() => appStore.sidebarCollapsed)
-const toggleCollapsedSidebar = async () => await appStore.toggleSidebarCollapsed()
+import Header from './Header.vue';
 </script>
 
 <template>
-  <n-layout>
+  <div class="min-h-screen">
     <Header />
-    <n-layout has-sider>
-      <n-layout-sider
-        bordered
-        show-trigger
-        collapse-mode="width"
-        :collapsed="isSidebarCollapsed"
-        :collapsed-width="64"
-        :width="240"
-        :native-scrollbar="false"
-        @update:collapsed="toggleCollapsedSidebar"
-      >
-        <n-menu :collapsed-width="64" :collapsed-icon-size="22" />
-      </n-layout-sider>
-      <n-layout-content content-style="padding: 24px;">
-        <slot />
-      </n-layout-content>
-    </n-layout>
-  </n-layout>
+    <main class="container mx-auto max-w-7xl py-8">
+      <slot />
+    </main>
+  </div>
 </template>
-
-<style scoped>
-.n-layout {
-  height: 100vh;
-}
-</style>

@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import { mineBlock } from '@/api/blockchain'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import { Add } from '@vicons/ionicons5'
-import { NIcon } from 'naive-ui'
-import { h, ref } from 'vue'
+import { useNotification } from 'naive-ui'
+import { ref } from 'vue'
+import Icon from './Icons.vue'
 
 interface MineBlockPayload {
   data: string
@@ -13,18 +13,18 @@ interface MineBlockPayload {
 const value = ref('')
 const difficultySlider = ref(1)
 const queryClient = useQueryClient()
-
-function renderIcon() {
-  return h(NIcon, null, {
-    default: () => h(Add),
-  })
-}
+const notification = useNotification()
 
 const { mutate, error, isPending } = useMutation({
   mutationFn: (payload: MineBlockPayload) => mineBlock(payload),
   onSuccess: () => {
     queryClient.invalidateQueries({ queryKey: ['blocks'] })
     value.value = ''
+    notification.success({
+      content: `Block mined and added to the chain`,
+      duration: 2500,
+      keepAliveOnHover: true,
+    })
   },
 })
 
@@ -45,13 +45,10 @@ function handleMineBlock() {
 
       <div class="flex gap-2">
         <n-input v-model:value="value" type="text" placeholder="Enter block data" />
-        <n-button
-          :render-icon="renderIcon"
-          @click="handleMineBlock"
-          :disabled="isPending || !value"
-          :loading="isPending"
-          >Mine Block</n-button
-        >
+        <n-button :loading="isPending" @click="handleMineBlock" :disabled="isPending || !value">
+          <Icon type="add" v-if="!isPending" />
+          Mine Block
+        </n-button>
       </div>
 
       <div class="flex items-center gap-4">

@@ -1,4 +1,4 @@
-import { useDark, useStorage } from '@vueuse/core'
+import { useDark } from '@vueuse/core'
 import { acceptHMRUpdate, defineStore } from 'pinia'
 
 export const useAppStore = defineStore('app', () => {
@@ -9,19 +9,11 @@ export const useAppStore = defineStore('app', () => {
     valueLight: 'light',
   })
 
-  const sidebarCollapsed = useStorage('sidebarCollapsed', false)
-
-  const toggleSidebarCollapsed = async () => {
-    sidebarCollapsed.value = !sidebarCollapsed.value
-  }
-
   const setIsDark = (value: boolean) => {
     isDark.value = value
   }
 
   return {
-    toggleSidebarCollapsed,
-    sidebarCollapsed,
     setIsDark,
     isDark,
   } as const

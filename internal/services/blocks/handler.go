@@ -73,7 +73,7 @@ func (s *Service) HandleWriteBlock(c *gin.Context) {
 	}
 }
 
-func (s *Service) HandlegetBlocks(c *gin.Context) {
+func (s *Service) HandleGetBlocks(c *gin.Context) {
 	avgMineTime := s.calculateAverageMineTime()
 
 	c.JSON(http.StatusOK, ChainResponse{
@@ -87,4 +87,18 @@ func (s *Service) HandlegetBlocks(c *gin.Context) {
 			AvgMineTime: avgMineTime,
 		},
 	})
+}
+
+func (s *Service) HandleVerifyChain(c *gin.Context) {
+	isValid, err := s.isChainValid()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{
+			Error:   "internal error",
+			Code:    http.StatusInternalServerError,
+			Details: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"valid": isValid})
 }

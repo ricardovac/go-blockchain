@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { darkTheme, NConfigProvider } from 'naive-ui'
+import { darkTheme, NConfigProvider, NNotificationProvider } from 'naive-ui'
 import { computed } from 'vue'
 import Layout from './layouts/Layout.vue'
 import { useAppStore } from './pinia/modules/app'
@@ -14,8 +14,25 @@ defineOptions({
 
 <template>
   <n-config-provider :theme="theme">
-    <Layout>
-      <router-view />
-    </Layout>
+    <n-notification-provider>
+      <Layout>
+        <router-view />
+      </Layout>
+      <n-back-top :right="50" />
+    </n-notification-provider>
   </n-config-provider>
 </template>
+
+<style>
+:root {
+  --bg-color: 255, 255, 255;
+}
+
+html.dark {
+  --bg-color: 16, 16, 20;
+}
+
+body {
+  background-color: rgb(var(--bg-color));
+}
+</style>

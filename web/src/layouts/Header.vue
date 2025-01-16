@@ -1,8 +1,9 @@
 <script lang="ts" setup>
-import Icon from '@/components/Icon.vue'
+import Icon from '@/components/Icons.vue'
 import { useAppStore } from '@/pinia/modules/app'
 import { useDark, useToggle } from '@vueuse/core'
 import { NButton } from 'naive-ui'
+import { useRouter } from 'vue-router'
 
 const appStore = useAppStore()
 const isDark = useDark({
@@ -10,39 +11,40 @@ const isDark = useDark({
     appStore.setIsDark(dark)
   },
 })
+const router = useRouter()
 const toggleDark = useToggle(isDark)
 </script>
 
 <template>
-  <n-layout-header bordered>
-    <n-breadcrumb>
-      <n-breadcrumb-item>Blockchain</n-breadcrumb-item>
-    </n-breadcrumb>
-    <n-space :size="20" class="items-center" style="line-height: 1">
-      <n-button circle @click.prevent="toggleDark()">
-        <template #icon>
-          <Icon v-if="isDark" type="sunny" />
-          <Icon v-else type="moon" />
-        </template>
-      </n-button>
-    </n-space>
+  <n-layout-header bordered class="relative h-16">
+    <n-grid :cols="3" class="h-full">
+      <n-gi class="flex items-center">
+        <div class="flex items-center gap-2 px-4">
+          <Icon type="cube" class="text-2xl" />
+          <span class="text-lg font-semibold">Blockchain Simulator</span>
+        </div>
+      </n-gi>
+
+      <n-gi class="flex items-center justify-center">
+        <n-breadcrumb>
+          <n-breadcrumb-item @click="router.push('/what-is-blockchain')">
+            What is Blockchain?
+          </n-breadcrumb-item>
+          <n-breadcrumb-item @click="router.push('/')">
+            Blockchain
+          </n-breadcrumb-item>
+        </n-breadcrumb>
+      </n-gi>
+
+      <n-gi class="flex items-center justify-end gap-4 px-4">
+        <ChainVerification />
+        <n-button circle @click.prevent="toggleDark()">
+          <template #icon>
+            <Icon v-if="isDark" type="sunny" />
+            <Icon v-else type="moon" />
+          </template>
+        </n-button>
+      </n-gi>
+    </n-grid>
   </n-layout-header>
 </template>
-
-<style scoped lang="scss">
-.n-layout-header {
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding: 9px 18px;
-  height: 60px;
-}
-
-.n-button {
-  margin-right: 15px;
-}
-
-.n-space {
-  margin-left: auto;
-}
-</style>

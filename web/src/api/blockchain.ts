@@ -19,3 +19,8 @@ export const mineBlock = async (payload: {
   const response = await request.post('/blocks', payload)
   return response.data
 }
+
+export const verifyChain = async (): Promise<{ valid: boolean; error?: string }> => {
+  const response = await request.get('/blocks/verify')
+  return response.data
+}

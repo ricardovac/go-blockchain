@@ -18,7 +18,7 @@ const formatDate = (date: string) =>
 </script>
 
 <template>
-  <div class="p-4">
+  <div class="py-4">
     <n-spin v-if="isLoading" size="large" />
 
     <n-empty v-else-if="!props.data" description="No blockchain data available" />
