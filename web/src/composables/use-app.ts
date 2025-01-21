@@ -1,7 +1,6 @@
-import { useDark } from '@vueuse/core'
-import { acceptHMRUpdate, defineStore } from 'pinia'
+import { createGlobalState, useDark } from '@vueuse/core'
 
-export const useAppStore = defineStore('app', () => {
+export const useAppStore = createGlobalState(() => {
   const isDark = useDark({
     selector: 'html',
     attribute: 'class',
@@ -18,7 +17,3 @@ export const useAppStore = defineStore('app', () => {
     isDark,
   } as const
 })
-
-if (import.meta.hot) {
-  import.meta.hot.accept(acceptHMRUpdate(useAppStore, import.meta.hot))
-}

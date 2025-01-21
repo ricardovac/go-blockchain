@@ -1,16 +1,11 @@
 <script lang="ts" setup>
 import Icon from '@/components/Icons.vue'
-import { useAppStore } from '@/pinia/modules/app'
-import { useDark, useToggle } from '@vueuse/core'
+import { useAppStore } from '@/composables/use-app'
+import { useToggle } from '@vueuse/core'
 import { NButton } from 'naive-ui'
 import { useRouter } from 'vue-router'
 
-const appStore = useAppStore()
-const isDark = useDark({
-  onChanged(dark: boolean) {
-    appStore.setIsDark(dark)
-  },
-})
+const { isDark } = useAppStore()
 const router = useRouter()
 const toggleDark = useToggle(isDark)
 </script>

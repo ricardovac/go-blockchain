@@ -1,10 +1,9 @@
 <script lang="ts" setup>
-import type { BlockchainResponse } from '@/utils/types';
+import { useBlockchain } from '@/composables/use-blockchain';
+import { useNotification } from 'naive-ui';
+import { watch } from 'vue';
 
-const props = defineProps<{
-  data?: BlockchainResponse
-  isLoading: boolean
-}>()
+const { blockchain, isLoadingBlocks, blocksError } = useBlockchain()
 
 const formatDate = (date: string) =>
   new Intl.DateTimeFormat('en-GB', {
@@ -15,24 +14,39 @@ const formatDate = (date: string) =>
     minute: '2-digit',
     second: '2-digit',
   }).format(new Date(date)).replace(' at', ',')
+
+const notification = useNotification()
+
+watch(blocksError, (error) => {
+  if (error) {
+    notification.error({
+      content: error.message,
+      duration: 2500,
+      keepAliveOnHover: true,
+    })
+  }
+},
+  { immediate: true }
+)
+
 </script>
 
 <template>
   <div class="py-4">
-    <n-spin v-if="isLoading" size="large" />
+    <n-spin v-if="isLoadingBlocks" size="large" />
 
-    <n-empty v-else-if="!props.data" description="No blockchain data available" />
+    <n-empty v-else-if="!blockchain" description="No blockchain data available" />
 
     <template v-else>
       <div class="flex gap-8 mb-4">
         <n-statistic label="Total Blocks">
-          {{ props.data.stats.totalBlocks }}
+          {{ blockchain.stats.totalBlocks }}
         </n-statistic>
-        <n-statistic label="Average Mine Time"> {{ props.data.stats.avgMineTime }}s </n-statistic>
+        <n-statistic label="Average Mine Time"> {{ blockchain.stats.avgMineTime }}s </n-statistic>
       </div>
 
       <div class="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
-        <div v-for="(item, index) in props.data.blocks" :key="item.hash">
+        <div v-for="(item, index) in blockchain.blocks" :key="item.hash">
           <n-card :title="item.index === 0 ? 'Block 0' : `Block ${index}`" class="min-h-96">
             <n-space vertical>
               <n-text ellipsis>Hash: {{ item.hash }}</n-text>

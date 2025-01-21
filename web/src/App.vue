@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { darkTheme, NConfigProvider, NNotificationProvider } from 'naive-ui'
 import { computed } from 'vue'
+import { useAppStore } from './composables/use-app'
 import Layout from './layouts/Layout.vue'
-import { useAppStore } from './pinia/modules/app'
 
-const appStore = useAppStore()
-const theme = computed(() => (appStore.isDark ? darkTheme : null))
+const { isDark } = useAppStore()
+const theme = computed(() => (isDark.value ? darkTheme : null))
 
 defineOptions({
   name: 'App',
@@ -18,7 +18,6 @@ defineOptions({
       <Layout>
         <router-view />
       </Layout>
-      <n-back-top :right="50" />
     </n-notification-provider>
   </n-config-provider>
 </template>
