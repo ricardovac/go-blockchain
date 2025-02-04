@@ -13,54 +13,34 @@ A simple blockchain implementation in Go that demonstrates the basic concepts of
 ## Prerequisites
 
 - Go 1.20 or higher
-- Make (optional, for using Makefile commands)
+- Node.js 14 or higher
+- pnpm
 
-## Installation
+## Start
 
-1. Clone the repository:
+- Install dependencies
 
 ```bash
-git clone https://github.com/ricardovac/go-blockchain.git
-cd go-blockchain
+cd apps/web
+pnpm install
 ```
 
-2. Create and configure environment variables:
-
 ```bash
-cp .env.example .env
-```
-
-Configure the following variables in
-PORT=8080 # API port
-DEFAULT_DIFFICULTY=2 # Initial mining difficulty (1-6)
-
-3. Install dependencies:
-
-```bash
+cd apps/api
 go mod download
 ```
 
-Running the Application
+- `cp .env.example .env` and fill required envs
+
+- Run api
 
 ```bash
-go run cmd/main.go
+go run apps/api/cmd/main.go
 ```
 
-## API Endpoints
+- Run frontend
 
-### Create a new block
-
-```http
-POST /blocks?difficulty=2
-Content-Type: application/json
-
-{
-    "BPM": 100
-}
-```
-
-### Get Blockchain
-
-```http
-GET /blocks
+```bash
+cd apps/web
+pnpm dev
 ```
